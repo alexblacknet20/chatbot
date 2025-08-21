@@ -185,10 +185,12 @@ class ChatApp:
         self.page.update()
 
     def open_settings(self, e):
-        """Open the settings dialog allowing the user to configure the API key."""
-        self.settings_modal = SettingsModal(self.page, self.gemini_client)
-        self.settings_modal.open = True
-        self.page.dialog = self.settings_modal
+
+
+        settings_modal = SettingsModal(self.page, self.gemini_client)
+        self.page.dialog = settings_modal
+        settings_modal.open = True
+
         self.page.update()
 
     def close_dialog(self):

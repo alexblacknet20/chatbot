@@ -56,11 +56,14 @@ class SettingsModal(ft.AlertDialog):
         except Exception:
             pass
         self.page.snack_bar = ft.SnackBar(ft.Text("Settings saved successfully!"), open=True)
+
+        self.page.update()
+
+    def close_modal(self, e):
         self.open = False
         self.page.dialog = None
         self.page.update()
 
     def close_modal(self, e):
         self.open = False
-        self.page.dialog = None
         self.page.update()

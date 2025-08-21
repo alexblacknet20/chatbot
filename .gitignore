@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Local data files
+chat_history.db
+settings.json

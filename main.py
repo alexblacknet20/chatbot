@@ -138,7 +138,7 @@ class ChatApp:
             ft.Text("Chats", size=20, weight=ft.FontWeight.BOLD),
         ] + [self.create_chat_tile(c) for c in self.chats]
         if self.current_chat == chat:
-            self.current_chat = self.chats if self.chats else self.create_new_chat()
+            self.current_chat = self.chats[0] if self.chats else self.create_new_chat()
             self.load_chat_history()
         self.page.update()
 
@@ -170,8 +170,12 @@ class ChatApp:
         self.db_session.commit()
 
         if user_message_content.lower().startswith("/research"):
-            topic = user_message_content.split(" ", 1)
-            response_content = await self.gemini_client.scrape_and_summarize(topic)
+            parts = user_message_content.split(" ", 1)
+            if len(parts) == 2:
+                topic = parts[1]
+                response_content = await self.gemini_client.scrape_and_summarize(topic)
+            else:
+                response_content = "Usage: /research <topic>"
         else:
             response_content = await self.gemini_client.generate_content(
                 user_message_content
@@ -186,7 +190,7 @@ class ChatApp:
         self.page.update()
 
     def open_settings(self, e):
-        settings_modal = SettingsModal(self.page)
+        settings_modal = SettingsModal(self.page, self.gemini_client)
         self.page.dialog = settings_modal
         settings_modal.open = True
         self.page.update()

@@ -1,8 +1,8 @@
 import os
-import asyncio
-import aiohttp
 import json
 from html.parser import HTMLParser
+
+import aiohttp
 
 
 # A simple HTML parser to strip tags and extract text content.
@@ -27,9 +27,25 @@ async def strip_html(html_content):
     return parser.get_text()
 
 
+CONFIG_FILE = "settings.json"
+
+
+def _load_api_key_from_file():
+    """Load the API key from the local settings file if it exists."""
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("GEMINI_API_KEY")
+        except Exception:
+            return None
+    return None
+
+
 class GeminiClient:
     def __init__(self, api_key=None):
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        # Attempt to read the API key from argument, environment or settings file
+        self.api_key = api_key or os.getenv("GEMINI_API_KEY") or _load_api_key_from_file()
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
 
     def set_api_key(self, api_key):
@@ -48,7 +64,10 @@ class GeminiClient:
                 async with session.post(url, headers=headers, json=payload) as response:
                     if response.status == 200:
                         data = await response.json()
-                        return data["candidates"]["content"]["parts"]["text"]
+                        try:
+                            return data["candidates"][0]["content"]["parts"][0]["text"]
+                        except (KeyError, IndexError, TypeError):
+                            return "Error: Unexpected response format from Gemini API."
                     else:
                         error_text = await response.text()
                         return f"Error: API call failed with status {response.status}. Response: {error_text}"
@@ -59,7 +78,11 @@ class GeminiClient:
         search_url = "https://html.duckduckgo.com/html/"
         params = {"q": query}
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 "
+                "Safari/537.3"
+            )
         }
         async with aiohttp.ClientSession() as session:
             try:

@@ -1,5 +1,6 @@
 import os
 import json
+
 from html.parser import HTMLParser
 
 import aiohttp
@@ -15,6 +16,7 @@ from duckduckgo_search import DDGS
 import google.generativeai as genai
 
 
+
 CONFIG_FILE = "settings.json"
 
 
@@ -28,6 +30,7 @@ def _load_api_key_from_file():
         except Exception:
             return None
     return None
+
 
 
 CONFIG_FILE = "settings.json"
@@ -49,6 +52,7 @@ class GeminiClient:
     def __init__(self, api_key=None):
         # Attempt to read the API key from argument, environment or settings file
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or _load_api_key_from_file()
+
 
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
 

@@ -13,3 +13,4 @@ Create a `settings.json` file or use the settings dialog to provide your Gemini 
 ```bash
 python main.py
 ```
+

@@ -9,22 +9,25 @@ import aiohttp
 class SimpleHTMLParser(HTMLParser):
     """A simple HTML parser to strip tags and extract text content."""
 
-    def __init__(self):
-        super().__init__()
-        self.reset()
-        self.text = []
-
-    def handle_data(self, data):
-        self.text.append(data)
-
-    def get_text(self):
-        return "".join(self.text)
+import aiohttp
+from bs4 import BeautifulSoup
+from duckduckgo_search import DDGS
+import google.generativeai as genai
 
 
-async def strip_html(html_content):
-    parser = SimpleHTMLParser()
-    parser.feed(html_content)
-    return parser.get_text()
+CONFIG_FILE = "settings.json"
+
+
+def _load_api_key_from_file():
+    """Load the API key from the local settings file if it exists."""
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("GEMINI_API_KEY")
+        except Exception:
+            return None
+    return None
 
 
 CONFIG_FILE = "settings.json"
@@ -46,14 +49,18 @@ class GeminiClient:
     def __init__(self, api_key=None):
         # Attempt to read the API key from argument, environment or settings file
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or _load_api_key_from_file()
+
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
 
     def set_api_key(self, api_key):
         self.api_key = api_key
+        if api_key:
+            genai.configure(api_key=api_key)
 
     async def generate_content(self, prompt):
         if not self.api_key:
             return "Error: Gemini API key is not set."
+
 
         headers = {"Content-Type": "application/json"}
         payload = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -124,7 +131,8 @@ class GeminiClient:
                     async with session.get(url, timeout=10) as response:
                         if response.status == 200:
                             html_content = await response.text()
-                            text_content = await strip_html(html_content)
+                            soup = BeautifulSoup(html_content, "html.parser")
+                            text_content = soup.get_text(separator=" ", strip=True)
                             scraped_content += text_content + "\n\n"
                 except Exception as e:
                     scraped_content += f"Could not scrape {url}: {e}\n\n"
@@ -132,6 +140,9 @@ class GeminiClient:
         if not scraped_content.strip():
             return "Could not scrape any content from the web."
 
-        summary_prompt = f"Please summarize the following content about '{topic}':\n\n{scraped_content[:10000]}"
+        summary_prompt = (
+            f"Please summarize the following content about '{topic}':\n\n"
+            f"{scraped_content[:10000]}"
+        )
         summary = await self.generate_content(summary_prompt)
         return f"**Research Summary for '{topic}'**\n\n{summary}"

@@ -6,6 +6,8 @@ Simple Flet-based chat application using Google's Gemini API with persistent cha
 
 Create a `settings.json` file or use the settings dialog to provide your Gemini API key.
 
+
+
 ## Running
 
 ```bash

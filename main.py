@@ -30,6 +30,7 @@ class ChatApp:
             ]
             + [self.create_chat_tile(chat) for chat in self.chats]
         )
+        self.page.drawer = self.sidebar
 
         self.page.appbar = ft.AppBar(
             leading=ft.IconButton(
@@ -46,18 +47,12 @@ class ChatApp:
         )
 
         self.page.add(
-            ft.Row(
+            ft.Column(
                 [
-                    self.sidebar,
-                    ft.Column(
-                        [
-                            self.chat_history,
-                            ft.Row(
-                                [self.user_input, self.send_button],
-                                alignment=ft.MainAxisAlignment.CENTER,
-                            ),
-                        ],
-                        expand=True,
+                    self.chat_history,
+                    ft.Row(
+                        [self.user_input, self.send_button],
+                        alignment=ft.MainAxisAlignment.CENTER,
                     ),
                 ],
                 expand=True,
@@ -190,14 +185,18 @@ class ChatApp:
         self.page.update()
 
     def open_settings(self, e):
+
         settings_modal = SettingsModal(self.page, self.gemini_client)
         self.page.dialog = settings_modal
         settings_modal.open = True
+
         self.page.update()
 
     def close_dialog(self):
-        self.page.dialog.open = False
-        self.page.update()
+        if self.page.dialog:
+            self.page.dialog.open = False
+            self.page.update()
+            self.page.dialog = None
 
     def toggle_theme(self, e):
         self.page.theme_mode = (

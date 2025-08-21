@@ -34,7 +34,13 @@ class SettingsModal(ft.AlertDialog):
             controls=[
                 ft.Text("Gemini API Key:", weight=ft.FontWeight.BOLD),
                 self.api_key_field,
-                ft.ElevatedButton("Save", on_click=self.save_settings),
+                ft.Row(
+                    [
+                        ft.ElevatedButton("Save", on_click=self.save_settings),
+                        ft.TextButton("Close", on_click=self.close_modal),
+                    ],
+                    alignment=ft.MainAxisAlignment.END,
+                ),
             ],
             tight=True,
         )
@@ -51,5 +57,9 @@ class SettingsModal(ft.AlertDialog):
             pass
         self.page.snack_bar = ft.SnackBar(ft.Text("Settings saved successfully!"), open=True)
         self.page.update()
+        self.open = False
+        self.page.update()
+
+    def close_modal(self, e):
         self.open = False
         self.page.update()

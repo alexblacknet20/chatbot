@@ -30,6 +30,7 @@ class ChatApp:
             ]
             + [self.create_chat_tile(chat) for chat in self.chats]
         )
+        self.page.drawer = self.sidebar
 
         self.page.appbar = ft.AppBar(
             leading=ft.IconButton(
@@ -46,18 +47,12 @@ class ChatApp:
         )
 
         self.page.add(
-            ft.Row(
+            ft.Column(
                 [
-                    self.sidebar,
-                    ft.Column(
-                        [
-                            self.chat_history,
-                            ft.Row(
-                                [self.user_input, self.send_button],
-                                alignment=ft.MainAxisAlignment.CENTER,
-                            ),
-                        ],
-                        expand=True,
+                    self.chat_history,
+                    ft.Row(
+                        [self.user_input, self.send_button],
+                        alignment=ft.MainAxisAlignment.CENTER,
                     ),
                 ],
                 expand=True,
@@ -138,7 +133,7 @@ class ChatApp:
             ft.Text("Chats", size=20, weight=ft.FontWeight.BOLD),
         ] + [self.create_chat_tile(c) for c in self.chats]
         if self.current_chat == chat:
-            self.current_chat = self.chats if self.chats else self.create_new_chat()
+            self.current_chat = self.chats[0] if self.chats else self.create_new_chat()
             self.load_chat_history()
         self.page.update()
 
@@ -170,8 +165,12 @@ class ChatApp:
         self.db_session.commit()
 
         if user_message_content.lower().startswith("/research"):
-            topic = user_message_content.split(" ", 1)
-            response_content = await self.gemini_client.scrape_and_summarize(topic)
+            parts = user_message_content.split(" ", 1)
+            if len(parts) == 2:
+                topic = parts[1]
+                response_content = await self.gemini_client.scrape_and_summarize(topic)
+            else:
+                response_content = "Usage: /research <topic>"
         else:
             response_content = await self.gemini_client.generate_content(
                 user_message_content
@@ -186,14 +185,17 @@ class ChatApp:
         self.page.update()
 
     def open_settings(self, e):
-        settings_modal = SettingsModal(self.page)
-        self.page.dialog = settings_modal
-        settings_modal.open = True
+        """Open the settings dialog allowing the user to configure the API key."""
+        self.settings_modal = SettingsModal(self.page, self.gemini_client)
+        self.settings_modal.open = True
+        self.page.dialog = self.settings_modal
         self.page.update()
 
     def close_dialog(self):
-        self.page.dialog.open = False
-        self.page.update()
+        if self.page.dialog:
+            self.page.dialog.open = False
+            self.page.update()
+            self.page.dialog = None
 
     def toggle_theme(self, e):
         self.page.theme_mode = (

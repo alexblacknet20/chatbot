@@ -1,6 +1,7 @@
 import os
 import json
 
+
 from html.parser import HTMLParser
 
 import aiohttp
@@ -10,6 +11,7 @@ import aiohttp
 class SimpleHTMLParser(HTMLParser):
     """A simple HTML parser to strip tags and extract text content."""
 
+
 import aiohttp
 from bs4 import BeautifulSoup
 from duckduckgo_search import DDGS
@@ -17,7 +19,9 @@ import google.generativeai as genai
 
 
 
+
 CONFIG_FILE = "settings.json"
+
 
 
 def _load_api_key_from_file():
@@ -54,7 +58,8 @@ class GeminiClient:
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or _load_api_key_from_file()
 
 
-        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+
+
 
     def set_api_key(self, api_key):
         self.api_key = api_key
@@ -64,6 +69,7 @@ class GeminiClient:
     async def generate_content(self, prompt):
         if not self.api_key:
             return "Error: Gemini API key is not set."
+
 
 
         headers = {"Content-Type": "application/json"}
@@ -122,6 +128,7 @@ class GeminiClient:
                         return []
             except Exception:
                 return []
+
 
     async def scrape_and_summarize(self, topic):
         urls = await self.search_web(topic)

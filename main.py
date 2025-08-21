@@ -185,9 +185,11 @@ class ChatApp:
         self.page.update()
 
     def open_settings(self, e):
-        self.settings_modal = SettingsModal(self.page, self.gemini_client)
-        self.page.dialog = self.settings_modal
-        self.page.dialog.open = True
+
+        settings_modal = SettingsModal(self.page, self.gemini_client)
+        self.page.dialog = settings_modal
+        settings_modal.open = True
+
         self.page.update()
 
     def close_dialog(self):
